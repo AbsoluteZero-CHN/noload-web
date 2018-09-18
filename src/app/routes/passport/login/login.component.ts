@@ -6,12 +6,13 @@ import { NzMessageService, NzModalService } from 'ng-zorro-antd';
 import {
   SocialService,
   SocialOpenType,
-  TokenService,
-  DA_SERVICE_TOKEN,
+  DA_SERVICE_TOKEN, ITokenService,
 } from '@delon/auth';
 import { ReuseTabService } from '@delon/abc';
 import { environment } from '@env/environment';
 import { StartupService } from '@core/startup/startup.service';
+import { LoginService } from './service/login.service';
+import { TokenModel } from './model/token.model';
 
 @Component({
   selector: 'passport-login',
@@ -35,8 +36,10 @@ export class UserLoginComponent implements OnDestroy {
     @Optional()
     @Inject(ReuseTabService)
     private reuseTabService: ReuseTabService,
-    @Inject(DA_SERVICE_TOKEN) private tokenService: TokenService,
+    @Inject(DA_SERVICE_TOKEN)
+    private tokenService: ITokenService,
     private startupSrv: StartupService,
+    private loginService: LoginService,
   ) {
     this.form = fb.group({
       userName: [null, [Validators.required, Validators.minLength(5)]],
@@ -53,12 +56,15 @@ export class UserLoginComponent implements OnDestroy {
   get userName() {
     return this.form.controls.userName;
   }
+
   get password() {
     return this.form.controls.password;
   }
+
   get mobile() {
     return this.form.controls.mobile;
   }
+
   get captcha() {
     return this.form.controls.captcha;
   }
@@ -100,10 +106,27 @@ export class UserLoginComponent implements OnDestroy {
       if (this.mobile.invalid || this.captcha.invalid) return;
     }
 
+    this.loading = true;
+    this.loginService.login({
+      username: this.userName.value,
+      password: this.password.value
+    })
+      .subscribe((token: TokenModel) => {
+          this.reuseTabService.clear();
+          this.tokenService.set({
+            token: token.access_token
+          });
+          this.router.navigate(['/']);
+        }, () => {
+          this.error = `账户或密码错误`;
+        }, () => {
+        this.loading = false;
+      });
+
     // **注：** DEMO中使用 `setTimeout` 来模拟 http
     // 默认配置中对所有HTTP请求都会强制[校验](https://ng-alain.com/auth/getting-started) 用户 Token
     // 然一般来说登录请求不需要校验，因此可以在请求URL加上：`/login?_allow_anonymous=true` 表示不触发用户 Token 校验
-    this.loading = true;
+    /*this.loading = true;
     setTimeout(() => {
       this.loading = false;
       if (this.type === 0) {
@@ -120,7 +143,7 @@ export class UserLoginComponent implements OnDestroy {
       this.reuseTabService.clear();
       // 设置Token信息
       this.tokenService.set({
-        token: '123456789',
+        token: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJzeXN0ZW0iLCJzY29wZSI6WyJvcGVuaWQiXSwiZXhwIjoxNTM2OTk4NTgyLCJpYXQiOjE1MzY5OTgyODIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iLCJST0xFX1VTRVIiXSwianRpIjoiOWZlMTg0YmItYjZlNC00MzRlLWE4MDktNGU0NjkxNmI3MWRkIiwiY2xpZW50X2lkIjoid2ViX2FwcCJ9.DWWBKZLdSzR1A4PjvuJUT0IWcmL8yDXtiOAho_ZsAOua5XxcvUz3mQ3qims1KRdEveESEZXoTKT98jCCo6PbPW3Mg09z0o2D9CO7h7KWgSaYm0D8TTSlFbc6LaAALyhStq89jJq_uHQBNytWUcX0h5-6avzGqbvXsaaMlX1ESjHrinS7ZO_tOtUgt3WaRhmC6OK_iQ1N47g0b5oPe8Zqja4YgEdywvoLO2-YBDVmHiwy9Dfdr_q6X0effOcshebmuBK7tHmJgkewwUXcMxDCb98J0aGZhZ8bPhsca0c2kr0SVUOSgcv-DXqxGv6VLGqp3zEdZ8ZLYMw4D3H4mNMDDA',
         name: this.userName.value,
         email: `cipchk@qq.com`,
         id: 10000,
@@ -130,7 +153,7 @@ export class UserLoginComponent implements OnDestroy {
       // this.startupSrv.load().then(() => this.router.navigate(['/']));
       // 否则直接跳转
       this.router.navigate(['/']);
-    }, 1000);
+    }, 1000);*/
   }
 
   // region: social

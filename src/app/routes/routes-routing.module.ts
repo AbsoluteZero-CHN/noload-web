@@ -3,7 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 import { environment } from '@env/environment';
 // layout
 import { LayoutDefaultComponent } from '../layout/default/default.component';
-import { LayoutFullScreenComponent } from '../layout/fullscreen/fullscreen.component';
 import { LayoutPassportComponent } from '../layout/passport/passport.component';
 // dashboard pages
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -17,11 +16,14 @@ import { UserLockComponent } from './passport/lock/lock.component';
 import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
+import { SimpleGuard } from '@delon/auth';
 
 const routes: Routes = [
   {
     path: '',
     component: LayoutDefaultComponent,
+    canActivate: [SimpleGuard],
+    canActivateChild: [SimpleGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent, data: { title: '仪表盘', titleI18n: 'dashboard' } },
