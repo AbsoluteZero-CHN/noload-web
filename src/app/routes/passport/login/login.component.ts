@@ -13,6 +13,7 @@ import { environment } from '@env/environment';
 import { StartupService } from '@core/startup/startup.service';
 import { LoginService } from './service/login.service';
 import { TokenModel } from './model/token.model';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'passport-login',
@@ -42,7 +43,7 @@ export class UserLoginComponent implements OnDestroy {
     private loginService: LoginService,
   ) {
     this.form = fb.group({
-      userName: [null, [Validators.required, Validators.minLength(5)]],
+      userName: [null, [Validators.required, Validators.minLength(4)]],
       password: [null, Validators.required],
       mobile: [null, [Validators.required, Validators.pattern(/^1\d{10}$/)]],
       captcha: [null, [Validators.required]],
@@ -117,8 +118,9 @@ export class UserLoginComponent implements OnDestroy {
             token: token.access_token
           });
           this.router.navigate(['/']);
-        }, () => {
+        }, (error) => {
           this.error = `账户或密码错误`;
+          this.loading = false;
         }, () => {
         this.loading = false;
       });

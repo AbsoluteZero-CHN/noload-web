@@ -17,6 +17,8 @@ import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
 import { SimpleGuard } from '@delon/auth';
+import { NasOfflineDownloaderComponent } from './nas/downloader/offline-downloader.component';
+import { ACLGuard } from '@delon/acl';
 
 const routes: Routes = [
   {
@@ -27,9 +29,15 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent, data: { title: '仪表盘', titleI18n: 'dashboard' } },
+      {
+        path: 'nas/offline-download',
+        component: NasOfflineDownloaderComponent,
+        data: { title: '任务列表', titleI18n: 'tasks', guard: ['ROLE_ADMIN', 'ROLE_NAS'] },
+        canActivate: [ACLGuard]
+      },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
-    ]
+    ],
   },
   // 全屏布局
   // {
@@ -45,8 +53,12 @@ const routes: Routes = [
     children: [
       { path: 'login', component: UserLoginComponent, data: { title: '登录', titleI18n: 'pro-login' } },
       { path: 'register', component: UserRegisterComponent, data: { title: '注册', titleI18n: 'pro-register' } },
-      { path: 'register-result', component: UserRegisterResultComponent, data: { title: '注册结果', titleI18n: 'pro-register-result' } }
-    ]
+      {
+        path: 'register-result',
+        component: UserRegisterResultComponent,
+        data: { title: '注册结果', titleI18n: 'pro-register-result' },
+      },
+    ],
   },
   // 单页不包裹Layout
   { path: 'callback/:type', component: CallbackComponent },
@@ -54,11 +66,12 @@ const routes: Routes = [
   { path: '403', component: Exception403Component },
   { path: '404', component: Exception404Component },
   { path: '500', component: Exception500Component },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'dashboard' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: environment.useHash })],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class RouteRoutingModule { }
+export class RouteRoutingModule {
+}

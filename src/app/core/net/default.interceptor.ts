@@ -16,13 +16,15 @@ import { mergeMap, catchError } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd';
 import { _HttpClient } from '@delon/theme';
 import { environment } from '@env/environment';
+import { OperatorFunction } from 'rxjs/internal/types';
 
 /**
  * 默认HTTP拦截器，其注册细节见 `app.module.ts`
  */
 @Injectable()
 export class DefaultInterceptor implements HttpInterceptor {
-  constructor(private injector: Injector) {}
+  constructor(private injector: Injector) {
+  }
 
   get msg(): NzMessageService {
     return this.injector.get(NzMessageService);
@@ -36,7 +38,7 @@ export class DefaultInterceptor implements HttpInterceptor {
     event: HttpResponse<any> | HttpErrorResponse,
   ): Observable<any> {
     // 可能会因为 `throw` 导出无法执行 `_HttpClient` 的 `end()` 操作
-    this.injector.get(_HttpClient).end();
+    // this.injector.get(_HttpClient).end();
     // 业务处理：一些通用操作
     switch (event.status) {
       case 200:
@@ -65,8 +67,9 @@ export class DefaultInterceptor implements HttpInterceptor {
         break;
       case 403:
       case 404:
-      case 500:
         this.goTo(`/${event.status}`);
+        break;
+      case 500:
         break;
       default:
         if (event instanceof HttpErrorResponse) {
@@ -84,13 +87,11 @@ export class DefaultInterceptor implements HttpInterceptor {
   intercept(
     req: HttpRequest<any>,
     next: HttpHandler,
-  ): Observable<
-    | HttpSentEvent
+  ): Observable<| HttpSentEvent
     | HttpHeaderResponse
     | HttpProgressEvent
     | HttpResponse<any>
-    | HttpUserEvent<any>
-  > {
+    | HttpUserEvent<any>> {
     // 统一加上服务端前缀
     let url = req.url;
     if (!url.startsWith('https://') && !url.startsWith('http://')) {
@@ -100,15 +101,22 @@ export class DefaultInterceptor implements HttpInterceptor {
     const newReq = req.clone({
       url: url,
     });
-    return next.handle(newReq).pipe(
-      mergeMap((event: any) => {
-        // 允许统一对请求错误处理，这是因为一个请求若是业务上错误的情况下其HTTP请求的状态是200的情况下需要
-        if (event instanceof HttpResponse && event.status === 200)
-          return this.handleData(event);
-        // 若一切都正常，则后续操作
-        return of(event);
-      }),
-      catchError((err: HttpErrorResponse) => this.handleData(err)),
-    );
+
+    const handler: OperatorFunction<any, any> = mergeMap((event: any) => {
+      // 允许统一对请求错误处理，这是因为一个请求若是业务上错误的情况下其HTTP请求的状态是200的情况下需要
+      if (event instanceof HttpResponse && event.status === 200)
+        return this.handleData(event);
+      // 若一切都正常，则后续操作
+      return of(event);
+    });
+
+    // 部分 url 需要处理响应异常, 因为需要交由业务层自己处理catchError((err: HttpErrorResponse) => this.handleData(err)),
+    return req.url === 'auth/login' ?
+      next.handle(newReq).pipe(
+        handler,
+      ) : next.handle(newReq).pipe(
+        handler,
+        catchError((err: HttpErrorResponse) => this.handleData(err)),
+      );
   }
 }

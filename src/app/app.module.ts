@@ -11,15 +11,18 @@ import { LayoutModule } from './layout/layout.module';
 import { StartupService } from '@core/startup/startup.service';
 import { DefaultInterceptor } from '@core/net/default.interceptor';
 import { SimpleInterceptor } from '@delon/auth';
+import localeZh from '@angular/common/locales/zh';
+
 // angular i18n
 import { registerLocaleData } from '@angular/common';
-import localeZhHans from '@angular/common/locales/zh-Hans';
-registerLocaleData(localeZhHans);
+registerLocaleData(localeZh);
 
 // @delon/form: JSON Schema form
 import { JsonSchemaModule } from '@shared/json-schema/json-schema.module';
 import { LoginService } from './routes/passport/login/service/login.service';
 import { CookieService } from 'ngx-cookie-service';
+import { NasModule } from './routes/nas/nas.module';
+import { DelonACLModule } from '@delon/acl';
 
 export function StartupServiceFactory(startupService: StartupService): Function {
   return () => startupService.load();
@@ -34,10 +37,13 @@ export function StartupServiceFactory(startupService: StartupService): Function 
     BrowserAnimationsModule,
     HttpClientModule,
     DelonModule.forRoot(),
+    // 添加 ACL 权限控制
+    DelonACLModule.forRoot(),
     CoreModule,
     SharedModule,
     LayoutModule,
     RoutesModule,
+    NasModule,
     // JSON-Schema form
     JsonSchemaModule
   ],

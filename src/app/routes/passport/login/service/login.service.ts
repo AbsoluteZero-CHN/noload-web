@@ -1,10 +1,9 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { PrincipalModel } from '../model/principal.model';
-import { _HttpClient } from '@delon/theme';
 import { environment } from '@env/environment.hmr';
-import { TokenModel } from '../model/token.model';
 import { Observable } from 'rxjs/internal/Observable';
 import { CookieService } from 'ngx-cookie-service';
+import { _HttpClient } from '@delon/theme/src/src/services/http/http.client';
 
 
 @Injectable()
@@ -23,7 +22,7 @@ export class LoginService {
   login(
     principal: PrincipalModel
   ): Observable<any> {
-    return this.http.post(`${environment.SERVER_URL}auth/login`, principal, {}, {
+    return this.http.post(`auth/login`, principal, {}, {
       headers: {
         'X-XSRF-TOKEN': this.cookieService.get('XSRF-TOKEN')
       }

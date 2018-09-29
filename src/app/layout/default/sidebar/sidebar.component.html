@@ -1,7 +1,8 @@
 <div class="aside-inner">
   <nz-dropdown nzTrigger="click" class="user-block clearfix">
     <div nz-dropdown class="user-block-dropdown">
-      <nz-avatar class="avatar" [nzIcon]="'user'"></nz-avatar>
+      <nz-avatar *ngIf="avatar" class="avatar" [nzIcon]="avatar"></nz-avatar>
+      <nz-avatar *ngIf="avatarText" class="avatar" [nzText]="avatarText"></nz-avatar>
       <div class="info">
         <strong>{{settings.user.name}}</strong>
         <p class="text-truncate mb0">{{settings.user.email}}</p>

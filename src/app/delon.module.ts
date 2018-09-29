@@ -14,7 +14,7 @@ import { throwIfAlreadyLoaded } from '@core/module-import-guard';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { AlainThemeModule } from '@delon/theme';
 import { DelonABCModule, ReuseTabService, ReuseTabStrategy } from '@delon/abc';
-import { DA_STORE_TOKEN, DelonAuthModule, LocalStorageStore } from '@delon/auth';
+import { DA_STORE_TOKEN, DelonAuthModule, SessionStorageStore } from '@delon/auth';
 import { DelonACLModule } from '@delon/acl';
 import { DelonCacheModule } from '@delon/cache';
 import { DelonUtilModule } from '@delon/util';
@@ -41,7 +41,7 @@ export function delonAuthConfig(): DelonAuthConfig {
     store_key: 'token',
     // 此处添加 `HttpClient` 不需要权限过滤的 url 列表
     // 添加 `/profile` 是因为一方面想要动态设置站点的基本信息, 另一方面为了在 cookie 里设置 `XSRF-TOKEN`
-    ignores: [ /\/login/, /assets\//, /passport\//, /profile\// ]
+    ignores: [ /\/login/, /assets\//, /passport\//, /profile\//, /uaa\/api\/menus\/tree/ ]
   });
 }
 
@@ -83,7 +83,7 @@ export class DelonModule {
         // { provide: SimpleTableConfig, useFactory: simpleTableConfig }
         { provide: AdPageHeaderConfig, useFactory: pageHeaderConfig },
         { provide: DelonAuthConfig, useFactory: delonAuthConfig },
-        { provide: DA_STORE_TOKEN, useClass: LocalStorageStore },
+        { provide: DA_STORE_TOKEN, useClass: SessionStorageStore },
       ],
     };
   }

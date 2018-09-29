@@ -1,0 +1,19 @@
+<page-header title="离线下载任务">
+</page-header>
+
+<nz-card [nzBordered]="false">
+  <sf #searchForm
+      mode="search"
+      (formChange)="query()"
+      (formReset)="query()"
+      [formData]="searchFormData"
+      [schema]="searchFormSchema"
+      [button]="null">
+    <button (click)="resetSearchForm()" nzType="primary" nz-button>重置</button>
+  </sf>
+  <simple-table
+    [data]="page.content"
+    [columns]="columns"
+    [showPagination]="false"
+  ></simple-table>
+</nz-card>
